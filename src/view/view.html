@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<style type="text/css">
+		#mainContent {
+			background-color: #E3F0FB;
+			position: relative;
+			text-align: center;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: xx-large;
+			font-weight: bold;
+		}
+		#blocoNome, #blocoQuantidade {
+			padding: 10px;
+		}
+		#nomeProduto, #quantidade {
+			width: 200px;
+		}
+		#botaoAdicionar {
+			color: #FFFFFF;
+			background-color: #4169E1;
+            border-color: #4169E1;
+			margin-top: 20px;
+			border-radius: 4px;
+			height: 30px;
+			font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+			font-weight: bold;
+			cursor: pointer;
+		}
+		
+		
+		ul {
+			text-align: left;
+			position: relative;
+			margin-top: 20px;
+			padding: 0;
+		}
+		ul li {
+			background: #EEEEEE;
+			font-family: monospace;
+			font-weight: bold;
+			font-size: 13px;
+			position: relative;
+			padding: 12px 8px 12px 200px;
+			cursor: pointer;
+		}
+		ul li:nth-child(odd) {
+			background: #C8C8C8;
+		}
+		ul li:hover {
+			background: #909090;
+		}
+		
+		
+		a {
+			text-decoration: none;
+			display: inline-block;
+			padding: 8px 16px;
+		}
+		a:hover {
+			color: black;
+			background-color: #ddd;
+			box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+		}
+		#paginas {
+			position: absolute;
+			bottom: 9%;
+			left: 0;
+			right: 0;
+			margin-left: auto;
+			margin-right: auto;
+		}
+		#prev, #next, #pagina {
+			position: absolute;
+			bottom: 0%;
+			width: 60px;
+			cursor: pointer;
+			font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+			
+			font-weight: bold;
+		}
+		#prev {
+			color: black;
+			background-color: #D8D8D8;
+			left: 500px;
+		}
+		#next {
+			color: #FFFFFF;
+			background-color: #0000FF;
+            border-color: #0000FF;
+            border-radius: 4px;
+			left: 800px;
+		}
+		#pagina {
+			color: black;
+			left: 50%;
+		}
+		
+		
+		.botaoRemover {
+			color: white;
+			background-color: red;
+			border-color: red;
+			font-weight: bolder;
+			cursor: pointer;
+		}
+	</style>
+</head>
+
+<body>
+	<form action="" method="post" id="mainContent">
+		<div class="form-group" id="blocoNome">
+			<input type="text" class="form-control" name="nomeProduto" id="nomeProduto" placeholder="Nome do Produto" maxlength="30" required="required" pattern="[^',]+" oninvalid="setCustomValidity('Preencha este campo usando apenas caracteres comuns')">
+		</div>
+		<div class="form-group" id="blocoQuantidade">
+			<input type="number" class="form-control" name="quantidade" id="quantidade" placeholder="Quantidade" required="required" min="1" max="2147483647">
+		</div>
+		<button type="submit" class="buttonStyle" id="botaoAdicionar">Adicionar Produto</button>
+	</form>
+	
+	
+	<ul id="lista"></ul>
+	<div id="paginas">
+		<div id="pagina"></div>
+		
+		<?php if($paginaAtual > 1) { ?>
+			<a href="../model/paginas.php?paginaAtual=<?php echo $paginaAtual; ?>&quantidadeItensPorPagina=<?php echo $quantidadeItensPorPagina; ?>&operacao=1" id="prev">&laquo; Prev</a>
+		<?php } ?>
+		
+		<?php $totalDePaginas = totalDePaginas($quantidadeItensPorPagina); ?>
+		<?php if($totalDePaginas > $paginaAtual) { ?>
+			<a href="../model/paginas.php?paginaAtual=<?php echo $paginaAtual; ?>&quantidadeItensPorPagina=<?php echo $quantidadeItensPorPagina; ?>&operacao=2" id="next">Next &raquo;</a>
+		<?php } ?>
+	</div>
+	
+	<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" language="javascript">
+		var lista = document.getElementById("lista");
+		var pagina = document.getElementById("pagina");
+		atualizar();
+		
+		function remover(nome) {
+			window.location = "../model/paginas.php?nomeProduto="+ nome +"&paginaAtual=<?php echo $paginaAtual; ?>&quantidadeItensPorPagina=<?php echo $quantidadeItensPorPagina; ?>";
+		}
+		function incluirItemNaLista(valorItem, nome, id) {
+			var elemento = document.createElement("LI");
+			elemento.appendChild(document.createTextNode(valorItem));
+			elemento.setAttribute("id", id);
+			
+			var botaoRemover = document.createElement("button");
+			botaoRemover.className = "botaoRemover";
+			botaoRemover.innerHTML = "X";
+			botaoRemover.setAttribute("id", "botao"+nome);
+			
+			botaoRemover.onclick = function() {
+				remover(this.id.replace('botao',''));
+				delete this;
+			};
+			elemento.appendChild(botaoRemover);
+			lista.appendChild(elemento);
+		}
+		function fill_left(str, charFill, fixedLength) {
+			if (!str || !charFill) return str;
+			var fill = "";
+			for (var i = 0; i < fixedLength; i++) {
+				fill += charFill;
+			}
+			str = fill + str;
+			return str;
+		}
+		function pad_right(str, charPad, fixedLength) {
+			if (!str || !charPad || str.length >= fixedLength) return str;
+			var remaining = (fixedLength - str.length);
+			for (var i = 0; i < remaining; i++) {
+				str += charPad;
+			}
+			return str;
+		}
+		function atualizar() {
+			var informacaoGeral;
+			var nomeItem;
+			pagina.textContent = "<?php echo $paginaAtual; ?>";
+			"<?php while ($row = mysqli_fetch_assoc($itensPaginaAtual)) { ?>";
+				informacaoGeral = "Nome: ";
+				nomeItem = "<?php echo $row['nome']; ?>";
+				informacaoGeral += nomeItem;
+				informacaoGeral = pad_right(informacaoGeral, "\xa0", 35);
+				informacaoGeral = fill_left(informacaoGeral, "\xa0", 37);
+				informacaoGeral += "Quantidade: " + "<?php echo $row['quantidade']; ?>";
+				informacaoGeral = pad_right(informacaoGeral, "\xa0", 120);
+				incluirItemNaLista(informacaoGeral, nomeItem, "produto"+nomeItem);
+			"<?php } ?>";
+		}
+	</script>
+</body>
+</html>
